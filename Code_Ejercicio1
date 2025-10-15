@@ -1,1 +1,30 @@
+// C++ code
+//
+int luzVerde = 10;
+int luzAmarillo = 9;
+int luzRojo= 8;
+int luzPeaton=11;
+int boton= 12;
 
+void setup(){
+  pinMode(luzVerde, OUTPUT);
+  pinMode(luzAmarillo, OUTPUT);
+  pinMode(luzRojo, OUTPUT);
+  pinMode(luzPeaton, OUTPUT);
+  pinMode(boton, INPUT);
+  }
+
+void loop(){
+  botonEstado =
+
+  digitalWrite(luzVerde, HIGH);
+  digitalWrite(luzAmarillo, LOW);
+  digitalWrite(luzRojo, LOW);
+  digitalWrite(luzPeaton, LOW);
+  apagar();
+}
+
+void apagar(){
+  for (int i=1,i<=13,i++){
+    digitalWrite(i,LOW);}
+}
