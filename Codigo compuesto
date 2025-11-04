@@ -1,3 +1,5 @@
+//todo funciona perfecto, falta solo el display y modificar detalles del codigo
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
@@ -18,14 +20,17 @@ byte rowPins[ROWS] = {10, 9, 8, 7};
 byte colPins[COLS] = {6, 5, 4, 3};
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
+// --- Pines ---
+int bpmPin = A0;
+int tempPin = A1;
+int buzzer = 12;
+
 // --- Sensor BPM ---
 #define samp_siz 4
 #define rise_threshold 5
-int sensorPin = A0;
-int buzzer = 12;
 bool sensorActivo = false;
 
-// --- Variables del sensor ---
+// --- Variables del sensor BPM ---
 float reads[samp_siz];
 float sum, last, reader, before = 0;
 bool rising = false;
@@ -36,13 +41,26 @@ unsigned long last_beat = 0, lastPrint = 0;
 const unsigned long interval = 3000;
 
 // --- Estado del menú ---
-enum Estado { MENU, SENSOR };
+enum Estado { MENU, SENSOR, TEMP };
 Estado estadoActual = MENU;
+
+// --- FUNCIONES ---
+void mostrarMenu();
+void manejarMenu(char key);
+void iniciarSensor();
+void medirBPM();
+void apagarSensor();
+void beepTresSegundos();
+void probarTemperatura();
+
+// --- MAPEO CON DECIMALES ---
+float mapFloat(float x, float in_min, float in_max, float out_min, float out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 void setup() {
   Serial.begin(9600);
   pinMode(buzzer, OUTPUT);
-  
   lcd.init();
   lcd.backlight();
   lcd.clear();
@@ -59,14 +77,11 @@ void loop() {
     if (estadoActual == MENU) {
       manejarMenu(key);
     } 
-    else if (estadoActual == SENSOR) {
-      // --- controles válidos mientras el sensor está activo ---
-      if (key == '0') {
-        apagarSensor();
-      } 
-      else if (key == '2') {
-        beepTresSegundos();  // ahora funciona también dentro del modo sensor
-      }
+    else if (estadoActual == SENSOR && key == '0') {
+      apagarSensor();
+    } 
+    else if (estadoActual == TEMP && key == '0') {
+      mostrarMenu();
     }
   }
 
@@ -80,24 +95,28 @@ void mostrarMenu() {
   estadoActual = MENU;
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("1) Iniciar sensor");
+  lcd.print("1) BPM 2) Temp");
   lcd.setCursor(0, 1);
-  lcd.print("2) Beep 3s  0)Off");
+  lcd.print("3) Beep  0)Off");
 }
 
 // --- Manejo del menú ---
 void manejarMenu(char key) {
   switch (key) {
     case '1':
-      iniciarSensor();
-      break;
-
-    case '0':
-      apagarSensor();
+      iniciarSensor();   // Mide BPM
       break;
 
     case '2':
-      beepTresSegundos();
+      probarTemperatura();  // Mide temperatura
+      break;
+
+    case '3':
+      beepTresSegundos();   // Beep 3 segundos
+      break;
+
+    case '0':
+      apagarSensor();       // Apagar
       break;
 
     default:
@@ -133,17 +152,15 @@ void medirBPM() {
   int n = 0;
   float reader_local;
 
-  // Promediar lecturas por 20ms
   start = millis();
   reader_local = 0;
   do {
-    reader_local += analogRead(sensorPin);
+    reader_local += analogRead(bpmPin);
     n++;
     now = millis();
   } while (now < start + 20);
   reader_local /= n;
 
-  // Promedio móvil
   sum -= reads[ptr];
   sum += reader_local;
   reads[ptr] = reader_local;
@@ -151,7 +168,6 @@ void medirBPM() {
   ptr++;
   if (ptr >= samp_siz) ptr = 0;
 
-  // Detección de subida (latido)
   if (last > before) {
     rise_count++;
     if (!rising && rise_count > rise_threshold) {
@@ -173,7 +189,6 @@ void medirBPM() {
 
   before = last;
 
-  // Mostrar BPM cada 3 segundos
   if (millis() - lastPrint >= interval) {
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -201,16 +216,44 @@ void apagarSensor() {
 // --- Beep de 3 segundos ---
 void beepTresSegundos() {
   lcd.clear();
-  lcd.print("Te moriste :(");
-  tone(buzzer, 1000);  // Sonido constante
+  lcd.print("Beep 3 segundos");
+  tone(buzzer, 1000);
   delay(3000);
-  apagarSensor();
+  noTone(buzzer);
+  mostrarMenu();
+}
 
-  // Si estaba en modo SENSOR, volver al monitoreo
-  if (estadoActual == SENSOR) {
-    lcd.clear();
-    lcd.print("Midiendo BPM...");
-  } else {
-    mostrarMenu();
+// --- Probar temperatura ---
+void probarTemperatura() {
+  estadoActual = TEMP;
+  lcd.clear();
+  lcd.print("Leyendo Temp...");
+  Serial.println("\n--- Prueba de temperatura ---");
+
+  const int numLecturas = 10;
+  long suma = 0;
+
+  for (int i = 0; i < numLecturas; i++) {
+    suma += analogRead(tempPin);
+    delay(100);
   }
+
+  float promedio = suma / (float)numLecturas;
+  float temperatura = mapFloat(promedio, 119, 114, 36, 37);
+
+  Serial.print("Promedio analogico: ");
+  Serial.print(promedio, 1);
+  Serial.print("  |  Temperatura: ");
+  Serial.print(temperatura, 2);
+  Serial.println(" °C");
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Temp Prom:");
+  lcd.setCursor(0, 1);
+  lcd.print(temperatura, 2);
+  lcd.print(" C");
+
+  delay(3000);
+  mostrarMenu();
 }
