@@ -7,14 +7,14 @@ Pines
 ?:
 IOREF:              13:
 RESET:              12:BUZZER
-3.3V:               11:TEMPERATURA D0
+3.3V:               11:
 5V:PROTOBOARD       10:BOTONERA
 GND:PROTOBOARD       9:BOTONERA
 GND:                 8:BOTONERA
 VIN:                 7:BOTONERA
                      6:BOTONERA
 A0:HEARTBEAT         5:BOTONERA
-A1:TEMPERATURA A0    4:BOTONERA
+A1:TEMPERATURAao 028 4:BOTONERA
 A2:                  3:BOTONERA
 A3:                  2:
 A4:SDA DISPLAY I2C   TX 1:   
