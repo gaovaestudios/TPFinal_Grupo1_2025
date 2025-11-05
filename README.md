@@ -114,7 +114,9 @@ por la pantalla LCD las distintas opciones y el botón correspondiente para acti
 
 **Medición del ritmo cardiaco (BPM)**
 1- Oprima el botón 1 de la botonera para empezar la medición.
+
 2- Coloque el dedo indice entre el medidor infrarojo y el fototransistor.
+
 3- Asegurese que el dispositivo medidor se encuentre dentro de la cubertura proporcionada para resguardarlo lo mas posible de la luz exterior para una mejor medición.
 4- Mantenga el dedo quieto por 10 segundos para una lectura mas estable.
 5- Lea por la pantalla LCD su ritmo cardiaco.
@@ -130,3 +132,4 @@ por la pantalla LCD las distintas opciones y el botón correspondiente para acti
 ### :receipt: Licencia
 Este proyecto está licenciado bajo los términos de la **Licencia MIT**.  
 Podés ver el texto completo en el archivo [LICENSE](LICENSE).
+
