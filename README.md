@@ -136,20 +136,27 @@ Podés ver el texto completo en el archivo [LICENSE](LICENSE).\
 Proyecto desarrollado como trabajo final de la materia Laboratorio de Computación I,\
 en la Universidad Nacional de San Martín UNSAM, año 2025.\
 
-Agradecimientos especiales:\
-A los creadores y fabricantes de los sensores y módulos utilizados:\
-· Arduino\
-· Sensores KY-028 KY-039 DHT11\
-· Display LCD\
-· Display Oled\
+Agradecimientos especiales:
 
-A los programas utilizados:\
-· Fritzing\
-· Tinkercad\
-. Discord\
-· Github\
+A los creadores y fabricantes de los sensores y módulos utilizados:
 
-A la comunidad de código abierto por los ejemplos y librerías empleadas.\
-Arduino ide\
-Datasheet \
+· Arduino
 
+· Sensores KY-028 KY-039 DHT11
+
+· Display LCD
+
+· Display Oled
+
+
+A los programas utilizados:
+
+· Fritzing
+
+· Tinkercad
+
+. Arduino ide
+
+· Github
+
+A la comunidad de código abierto por los ejemplos, librerías empleadas y las Datasheets consultadas.
