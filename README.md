@@ -48,6 +48,7 @@ El sistema comienza con un menú principal interactivo que muestra en el LCD dis
 
 
 ## Máquina de estados
+```
 ╔════════════════════════════════════════════════════════════════════════╗
 ║                         ESTADO: MENU                                   ║
 ║────────────────────────────────────────────────────────────────────────║
@@ -96,7 +97,7 @@ El sistema comienza con un menú principal interactivo que muestra en el LCD dis
                    ║       Retorna al ESTADO: MENU          ║
                    ║ (LCD vuelve a mostrar las opciones)    ║
                    ╚════════════════════════════════════════╝
-
+```
 
 ## Instrucciones de uso
 Al tener el medidor de pulso y temperatura conectado y con el código subido al Arduino se mostrara
@@ -162,5 +163,6 @@ A los programas utilizados:
 · Github
 
 A la comunidad de código abierto por los ejemplos, librerías empleadas y las Datasheets consultadas.
+
 
 
