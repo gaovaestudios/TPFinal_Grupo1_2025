@@ -51,7 +51,7 @@ Todas estas transiciones dependen de las entradas del usuario en el keypad. El f
 **Descripción:** Elementos de conexión, permiten interconectar todos los componentes del circuito.
 
 ## Esquema Eléctrico
-
+![Esquema electrico](media/esquema electrico .png)
 
 ## Máquina de estados
 ```
@@ -169,6 +169,7 @@ A los programas utilizados:
 · Github
 
 A la comunidad de código abierto por los ejemplos, librerías empleadas y las Datasheets consultadas.
+
 
 
 
