@@ -2,7 +2,7 @@
 #include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>   // <-- agregado
+#include <Adafruit_SSD1306.h> 
 
 // --- OLED 0.91" ---
 #define SCREEN_WIDTH 128
@@ -36,7 +36,7 @@ int buzzer = 12;
 bool sensorActivo = false;
 
 // --- Variables del sensor BPM ---
-float reads[samp_siz];
+float lecturas[samp_siz];
 float sum, last, reader, before = 0;
 bool rising = false;
 int rise_count = 0;
@@ -52,14 +52,14 @@ Estado estadoActual = MENU;
 // --- FUNCIONES ---
 void mostrarMenu();
 void manejarMenu(char key);
-void iniciarSensor();
+void iniciarBPM();
 void medirBPM();
-void apagarSensor();
+void apagarSensorBPM();
 void beepTresSegundos();
 void probarTemperatura();
 void mostrarTermometro(float temperatura);
 
-// --- MAPEO CON DECIMALES ---
+// --- MAPEO CON DECIMALES (TEMPERATURA)---
 float mapFloat(float x, float in_min, float in_max, float out_min, float out_max) {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
@@ -94,11 +94,11 @@ void loop() {
     } 
     else if (estadoActual == SENSOR) {
       if (key == '0') {
-        apagarSensor();
+        apagarSensorBPM();
       } 
       else if (key == '3') {
         beepTresSegundos();
-        apagarSensor();
+        apagarSensorBPM();
       }
     } 
     else if (estadoActual == TEMP && key == '0') {
@@ -131,10 +131,10 @@ void mostrarMenu() {
 // --- Manejo del menú ---
 void manejarMenu(char key) {
   switch (key) {
-    case '1': iniciarSensor(); break;
+    case '1': iniciarBPM(); break;
     case '2': probarTemperatura(); break;
     case '3': beepTresSegundos(); break;
-    case '0': apagarSensor(); break;
+    case '0': apagarSensorBPM(); break;
     default:
       lcd.clear();
       lcd.print("Opcion invalida");
@@ -145,7 +145,7 @@ void manejarMenu(char key) {
 }
 
 // --- Iniciar sensor BPM ---
-void iniciarSensor() {
+void iniciarBPM() {
   lcd.clear();
   lcd.print("Iniciando sensor");
   delay(1000);
@@ -154,7 +154,7 @@ void iniciarSensor() {
   sensorActivo = true;
   estadoActual = SENSOR;
 
-  for (int i = 0; i < samp_siz; i++) reads[i] = 0;
+  for (int i = 0; i < samp_siz; i++) lecturas[i] = 0;
   sum = 0; rising = false; rise_count = 0;
   first = second = third = 0;
   before = 0; lastBPM = 0;
@@ -170,7 +170,7 @@ void iniciarSensor() {
 }
 
 void medirBPM() {
-  static int ptr = 0;
+  static int punteroLecturasBPM = 0;
   long now, start;
   int n = 0;
   float reader_local;
@@ -184,16 +184,13 @@ void medirBPM() {
   } while (now < start + 20);
   reader_local /= n;
 
-  // --- Señal al Plotter Serie ---
-  Serial.println(reader_local);
-
-  // --- Cálculo original BPM ---
-  sum -= reads[ptr];
+  // --- Cálculo de BPM ---
+  sum -= lecturas[punteroLecturasBPM];
   sum += reader_local;
-  reads[ptr] = reader_local;
+  lecturas[punteroLecturasBPM] = reader_local;
   last = sum / samp_siz;
-  ptr++;
-  if (ptr >= samp_siz) ptr = 0;
+  punteroLecturasBPM++;
+  if (punteroLecturasBPM >= samp_siz) punteroLecturasBPM = 0;
 
   if (last > before) {
     rise_count++;
@@ -215,7 +212,6 @@ void medirBPM() {
 
   before = last;
 
-  // --- Actualización del LCD + beep sincronizado ---
   if (millis() - lastPrint >= interval) {
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -224,11 +220,10 @@ void medirBPM() {
       lcd.print("BPM: ");
       lcd.print(lastBPM, 0);
 
-      // 💓 Corazón late junto al beep
-      mostrarCorazon(true);      // corazón grande
-      tone(buzzer, 1000, 200);
-      delay(200);                // duración del latido
-      mostrarCorazon(false);     // vuelve al tamaño normal
+      mostrarCorazon(true);      
+      tone(buzzer, 2000, 200);
+      delay(200);                
+      mostrarCorazon(false);     
 
     } else {
       lcd.print("Esperando senal");
@@ -241,7 +236,7 @@ void medirBPM() {
 
 
 // --- Apagar sensor ---
-void apagarSensor() {
+void apagarSensorBPM() {
   sensorActivo = false;
   lcd.clear();
   lcd.print("...");
@@ -259,10 +254,9 @@ void beepTresSegundos() {
   lcd.print("te moriste :(");
 
   oled.clearDisplay();
-  oled.drawLine(0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2, SSD1306_WHITE);
-  oled.display();
+  mostrarCorazonRoto();
 
-  tone(buzzer, 1000);
+  tone(buzzer, 2000);
   delay(3000);
   noTone(buzzer);
 
@@ -353,6 +347,27 @@ void mostrarCorazon(bool grande) {
     oled.fillCircle(x + 5, y - 3, 4, SSD1306_WHITE);
     oled.fillTriangle(x - 9, y - 1, x + 9, y - 1, x, y + 8, SSD1306_WHITE);
   }
+
+  oled.display();
+}
+void mostrarCorazonRoto() {
+  oled.clearDisplay();
+
+  int x = SCREEN_WIDTH / 2;
+  int y = SCREEN_HEIGHT / 2;
+
+  // Parte izquierda del corazón
+  oled.fillCircle(x - 6, y - 3, 5, SSD1306_WHITE);
+  oled.fillTriangle(x - 11, y - 1, x, y - 1, x - 3, y + 10, SSD1306_WHITE);
+
+  // Parte derecha del corazón
+  oled.fillCircle(x + 6, y - 3, 5, SSD1306_WHITE);
+  oled.fillTriangle(x, y - 1, x + 11, y - 1, x + 3, y + 10, SSD1306_WHITE);
+
+  // Grieta al medio (una línea en zigzag)
+  oled.drawLine(x - 1, y - 5, x + 1, y - 2, SSD1306_BLACK);
+  oled.drawLine(x + 1, y - 2, x - 2, y + 1, SSD1306_BLACK);
+  oled.drawLine(x - 2, y + 1, x + 2, y + 5, SSD1306_BLACK);
 
   oled.display();
 }
